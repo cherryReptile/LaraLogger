@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    volumes:
+      - ./docker/nginx/templates:/etc/nginx/templates
+    ports:
+      - "80:80"
+    command: [ nginx-debug, '-g', 'daemon off;' ]
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    depends_on:
+      - db
+    user: "1000:1000"
+    volumes:
+      - .:/var/www
+      - /etc/passwd:/etc/passwd
+      - /etc/shadow:/etc/shadow
+  db:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./docker/data/postgresql/data:/var/lib/postgresql/data
+    ports:
+      - ${DB_PORT:-5432}:5432
