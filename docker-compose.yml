@@ -5,6 +5,8 @@ services:
     image: nginx:stable-alpine
     volumes:
       - ./docker/nginx/templates:/etc/nginx/templates
+    environment:
+      NGINX_HOST: ${APP_URL}
     ports:
       - "80:80"
     command: [ nginx-debug, '-g', 'daemon off;' ]
@@ -15,6 +17,8 @@ services:
     depends_on:
       - db
     user: "1000:1000"
+    ports:
+      - "9000:9000"
     volumes:
       - .:/var/www
       - /etc/passwd:/etc/passwd
