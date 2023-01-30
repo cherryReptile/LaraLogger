@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('providers_data', function (Blueprint $table) {
             $table->id();
-            $table->string('login');
-//            $table->timestamp('email_verified_at')->nullable();
-//            $table->string('password');
-//            $table->rememberToken();
+            $table->json('data')->nullable();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnDelete();
+            $table->string('username')->index('providers_data_username_index');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('providers_data');
     }
 };
