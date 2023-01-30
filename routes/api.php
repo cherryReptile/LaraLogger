@@ -15,8 +15,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('auth')->group(function() {
-   Route::post('/register', [AppAuthController::class, 'register'])->name('register');
+Route::prefix('auth')->group(function () {
+    Route::prefix('app')->group(function () {
+        Route::post('/register', [AppAuthController::class, 'register'])->name('app.register');
+        Route::post('/login', [AppAuthController::class, 'login'])->name('app.login');
+    });
 });
 
 //Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

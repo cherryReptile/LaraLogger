@@ -2,30 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\AppUserRequest;
 use App\Http\Resources\UserResource;;
 use App\Services\Auth\App;
-use Response;
+use Exception;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Http\JsonResponse;
 
 class AppAuthController extends Controller
 {
-    public function register(CreateUserRequest $request): JsonResponse
+    public function register(AppUserRequest $request): JsonResponse
     {
-        $app = new App();
-        $user = $app->register($request->post());
+        $app = new App($request->post());
 
-        if ($user === null) {
+        try {
+            $res = $app->register();
+        } catch (Exception $e) {
             return Response::json([
-               'error' => 'This user already exists'
+                'error' => $e->getMessage()
             ], 400);
         }
 
-        $token = $user->createToken('api')->plainTextToken;
+        return Response::json([
+            'user' => UserResource::make($res['user']),
+            'token' => $res['token']
+        ], 201);
+    }
+
+    public function login(AppUserRequest $request): JsonResponse {
+        $app = new App($request->post());
+
+        try {
+            $res = $app->login();
+        } catch (Exception $e) {
+            return Response::json([
+                'error' => $e->getMessage()
+            ], 400);
+        }
 
         return Response::json([
-            'user' => UserResource::make($user),
-            'token' => $token
-        ], 201);
+            'user' => UserResource::make($res['user']),
+            'token' => $res['token']
+        ]);
     }
 }
