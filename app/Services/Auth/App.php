@@ -92,8 +92,8 @@ class App extends AppAuthService
 
         $user->providersData()->create([
             'data' => json_encode([
-                'email' => $this->request['email'],
-                'password' => Hash::make($this->request['password'])
+                'email' => $this->request['request']['email'],
+                'password' => Hash::make($this->request['request']['password'])
             ]),
             'username' => $user->login,
             'provider_id' => $this->provider->id
