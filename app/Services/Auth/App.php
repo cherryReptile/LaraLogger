@@ -77,8 +77,37 @@ class App extends AppAuthService
             'token' => $token
         ];
     }
-//    public function addAccount()
-//    {
-//        // TODO: Implement addAccount() method.
-//    }
+    public function addAccount(): array
+    {
+        $user = $this->request['user'];
+        $pd = $user->providersData()->where('provider_id', '=', "{$this->provider->id}")->first();
+        if ($pd != null) {
+            throw new Exception('you already have account in app service');
+        }
+
+        $providersData = ProvidersData::query()->select()->whereRaw("provider_id={$this->provider->id} and username='{$this->request['request']['email']}'")->first();
+        if ($providersData != null) {
+            throw new Exception('this user already exists');
+        }
+
+        $user->providersData()->create([
+            'data' => json_encode([
+                'email' => $this->request['email'],
+                'password' => Hash::make($this->request['password'])
+            ]),
+            'username' => $user->login,
+            'provider_id' => $this->provider->id
+        ]);
+
+        DB::table('users_providers')->insert([
+            'user_id' => $user->id,
+            'provider_id' => $this->provider->id,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        return [
+            'message' => 'account added successfully through app service'
+        ];
+    }
 }
