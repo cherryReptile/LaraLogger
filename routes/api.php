@@ -25,7 +25,7 @@ Route::prefix('auth')->group(function () {
     Route::prefix('oauth')->group(function () {
         Route::get('/{provider}/url', [OAuthController::class, 'getUrl'])->name('oauth.url');
         Route::post('/{provider}/token', [OAuthController::class, 'getToken'])->name('oauth.token');
-//        Route::post('/{provider}/login', [OAuthController::class, 'login'])->name('oauth.login');
+        Route::post('/{provider}/login', [OAuthController::class, 'login'])->name('oauth.login');
 //        Route::post('/{provider}/add', [OAuthController::class, 'addAccount'])->name('oauth.add');
     });
     Route::get('/logout', [LogoutController::class, 'logout'])->middleware('auth:sanctum')->name('logout');

@@ -2,10 +2,15 @@
 
 namespace App\Services\Auth;
 
+use App\Models\Provider;
+use App\Models\ProvidersData;
+use App\Models\User;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\DB;
+use Psr\Http\Message\ResponseInterface;
 
 class OAuth extends OAuthService
 {
@@ -14,6 +19,7 @@ class OAuth extends OAuthService
     protected string $urlToToken;
     protected string $redirectUri;
     protected array $oauthClient;
+    protected string $serviceApiUrl;
     protected array $request;
 
     public function __construct(string $provider, ?array $request)
@@ -26,7 +32,8 @@ class OAuth extends OAuthService
             ];
             $this->redirectUri = getenv('APP_URL') . '/api/v1/auth/github/token';
             $this->urlToCode = 'https://github.com/login/oauth/authorize?client_id=' . $this->oauthClient['client_id'];
-            $this->urlToToken = "https://github.com/login/oauth/access_token";
+            $this->urlToToken = 'https://github.com/login/oauth/access_token';
+            $this->serviceApiUrl = 'https://api.github.com/user';
         }
         if ($this->provider === 'google') {
             $this->oauthClient = [
@@ -36,6 +43,7 @@ class OAuth extends OAuthService
             $this->redirectUri = 'http://localhost/api/v1/auth/google/token';
             $this->urlToCode = 'https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&redirect_uri=http://localhost/api/v1/auth/google/token&response_type=code&client_id=' . $this->oauthClient['client_id'];
             $this->urlToToken = "https://oauth2.googleapis.com/token";
+            $this->serviceApiUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
         }
         if ($request != null) {
             $this->request = $request;
@@ -82,9 +90,55 @@ class OAuth extends OAuthService
         return ['access_token' => $data->access_token];
     }
 
+    /**
+     * @throws Exception
+     */
     public function login(): array
     {
-        return [];
+        $client = new Client(['headers' => ['Authorization' => 'Bearer ' . $this->request['access_token']]]);
+
+        try {
+            $res = $client->request('GET', $this->serviceApiUrl);
+        } catch (GuzzleException) {
+            throw new Exception('failed to get user from ' . $this->provider);
+        }
+
+        $data = json_decode((string)$res->getBody());
+
+        $provider = Provider::where('provider', '=', $this->provider)->firstOrFail();
+        $uniqueKey = $provider->unique_key;
+        $providersData = ProvidersData::query()->select()->whereRaw("provider_id={$provider->id} and username='{$data->$uniqueKey}'")->first();
+        if ($providersData != null) {
+            $user = $providersData->user;
+            $token = $user->createToken('api')->plainTextToken;
+            return [
+                'user' => $user,
+                'token' => $token
+            ];
+        }
+
+        $user = User::create(['login' => $data->$uniqueKey]);
+        $json = json_encode($data);
+
+        $user->providersData()->create([
+            'data' => $json,
+            'username' => $user->login,
+            'provider_id' => $provider->id
+        ]);
+
+        DB::table('users_providers')->insert([
+            'user_id' => $user->id,
+            'provider_id' => $provider->id,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $token = $user->createToken('api')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token
+        ];
     }
 
     public function addAccount(): array
