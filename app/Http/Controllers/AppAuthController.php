@@ -9,7 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\JsonResponse;
 
-class AppAuthController extends Controller
+class AppAuthController extends CustomController
 {
     public function register(AppUserRequest $request): JsonResponse
     {
@@ -18,9 +18,7 @@ class AppAuthController extends Controller
         try {
             $res = $app->register();
         } catch (Exception $e) {
-            return Response::json([
-                'error' => $e->getMessage()
-            ], 400);
+            return $this->responseError($e, 400);
         }
 
         return Response::json([
@@ -36,9 +34,7 @@ class AppAuthController extends Controller
         try {
             $res = $app->login();
         } catch (Exception $e) {
-            return Response::json([
-                'error' => $e->getMessage()
-            ], 400);
+            return $this->responseError($e, 400);
         }
 
         return Response::json([
@@ -55,9 +51,7 @@ class AppAuthController extends Controller
         try {
             $res = $app->addAccount();
         } catch (Exception $e) {
-            return Response::json([
-                'error' => $e->getMessage()
-            ], 400);
+            return $this->responseError($e, 400);
         }
 
         return Response::json([

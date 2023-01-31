@@ -10,11 +10,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
-class OAuthController extends Controller
+class OAuthController extends CustomController
 {
     public function getUrl(Request $request): JsonResponse
     {
-        $oauth = new OAuth($request->provider, null);
+        try {
+            $oauth = new OAuth($request->provider, null);
+        } catch (Exception $e) {
+            return $this->responseError($e, 400);
+        }
         $res = $oauth->getUrl();
         return Response::json($res);
     }
@@ -25,13 +29,11 @@ class OAuthController extends Controller
             'code' => 'required'
         ]);
 
-        $oauth = new OAuth($request->provider, $request->post());
         try {
+            $oauth = new OAuth($request->provider, $request->post());
             $res = $oauth->getToken();
         } catch (Exception $e) {
-            return Response::json([
-                'error' => $e->getMessage()
-            ], 400);
+            return $this->responseError($e, 400);
         }
         return Response::json($res);
     }
@@ -42,17 +44,34 @@ class OAuthController extends Controller
             'access_token' => 'required'
         ]);
 
-        $oauth = new OAuth($request->provider, $request->post());
         try {
+            $oauth = new OAuth($request->provider, $request->post());
             $res = $oauth->login();
         } catch (Exception $e) {
-            return Response::json([
-                'error' => $e->getMessage()
-            ], 400);
+            return $this->responseError($e, 400);
         }
         return Response::json([
             'user' => UserResource::make($res['user']),
             'token' => $res['token']
+        ]);
+    }
+
+    public function addAccount(Request $request)
+    {
+        $request->validate(['access_token' => 'required']);
+
+        try {
+            $oauth = new OAuth($request->provider, [
+                'user' => $request->user(),
+                'request' => $request->post()
+            ]);
+            $res = $oauth->addAccount();
+        } catch (Exception $e) {
+            return $this->responseError($e, 400);
+        }
+
+        return Response::json([
+            'message' => $res['message']
         ]);
     }
 }

@@ -6,7 +6,6 @@ use App\Models\Provider;
 use App\Models\ProvidersData;
 use App\Models\User;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class App extends AppAuthService
@@ -14,7 +13,8 @@ class App extends AppAuthService
     protected array $request;
     protected Provider $provider;
 
-    public function __construct(array $request) {
+    public function __construct(array $request)
+    {
         $this->request = $request;
         $this->provider = Provider::where('provider', '=', 'app')->firstOrFail();
     }
@@ -24,27 +24,20 @@ class App extends AppAuthService
      */
     public function register(): array
     {
-        $providersData = ProvidersData::query()->select()->whereRaw("provider_id={$this->provider->id} and username='{$this->request['email']}'")->first();
+        $providersData = ProvidersData::findByProviderIdAndUsername($this->provider->id, $this->request['email']);
         if ($providersData != null) {
             throw new Exception('this user already exists');
         }
 
         $user = User::create(['login' => $this->request['email']]);
-        $user->providersData()->create([
-            'data' => json_encode([
-                'email' => $this->request['email'],
-                'password' => Hash::make($this->request['password'])
-            ]),
-            'username' => $user->login,
-            'provider_id' => $this->provider->id
-        ]);
 
-        DB::table('users_providers')->insert([
-            'user_id' => $user->id,
-            'provider_id' => $this->provider->id,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        $data = [
+            'email' => $this->request['email'],
+            'password' => Hash::make($this->request['password'])
+        ];
+
+        $providersData = new ProvidersData();
+        $providersData->addProviderWithData($user, $this->provider, $data);
 
         $token = $user->createToken('api')->plainTextToken;
 
@@ -59,7 +52,7 @@ class App extends AppAuthService
      */
     public function login(): array
     {
-        $providersData = ProvidersData::query()->select()->whereRaw("provider_id={$this->provider->id} and username='{$this->request['email']}'")->first();
+        $providersData = ProvidersData::findByProviderIdAndUsername($this->provider->id, $this->request['email']);
         if ($providersData === null) {
             throw new Exception('user not found');
         }
@@ -77,34 +70,31 @@ class App extends AppAuthService
             'token' => $token
         ];
     }
+
+    /**
+     * @throws Exception
+     */
     public function addAccount(): array
     {
         $user = $this->request['user'];
+        $request = $this->request['request'];
         $pd = $user->providersData()->where('provider_id', '=', "{$this->provider->id}")->first();
         if ($pd != null) {
             throw new Exception('you already have account in app service');
         }
 
-        $providersData = ProvidersData::query()->select()->whereRaw("provider_id={$this->provider->id} and username='{$this->request['request']['email']}'")->first();
+        $providersData = ProvidersData::findByProviderIdAndUsername($this->provider->id, $request['email']);
         if ($providersData != null) {
             throw new Exception('this user already exists');
         }
+        $providersData = new ProvidersData();
 
-        $user->providersData()->create([
-            'data' => json_encode([
-                'email' => $this->request['request']['email'],
-                'password' => Hash::make($this->request['request']['password'])
-            ]),
-            'username' => $user->login,
-            'provider_id' => $this->provider->id
-        ]);
+        $data = [
+            'email' => $this->request['request']['email'],
+            'password' => Hash::make($this->request['request']['password'])
+        ];
 
-        DB::table('users_providers')->insert([
-            'user_id' => $user->id,
-            'provider_id' => $this->provider->id,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        $providersData->addProviderWithData($user, $this->provider, $data);
 
         return [
             'message' => 'account added successfully through app service'
