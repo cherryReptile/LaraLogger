@@ -23,6 +23,8 @@ services:
       - .:/var/www
       - /etc/passwd:/etc/passwd
       - /etc/shadow:/etc/shadow
+    env_file:
+      - .env
   db:
     image: postgres:alpine
     restart: unless-stopped
