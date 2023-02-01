@@ -38,6 +38,7 @@ class App extends AppAuthService
 
         $providersData = new ProvidersData();
         $providersData->addProviderWithData($user, $this->provider, $data);
+        $user->profile()->create();
 
         $token = $user->createToken('api')->plainTextToken;
 
