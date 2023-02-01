@@ -3,6 +3,7 @@
 use App\Http\Controllers\AppAuthController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\OAuthController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +28,10 @@ Route::prefix('auth')->group(function () {
         Route::post('/{provider}/token', [OAuthController::class, 'getToken'])->name('oauth.token');
         Route::post('/{provider}/login', [OAuthController::class, 'login'])->name('oauth.login');
         Route::post('/{provider}/add', [OAuthController::class, 'addAccount'])->name('oauth.add')->middleware('auth:sanctum');
+    });
+    Route::prefix('profile')->middleware(['auth:sanctum'])->group(function () {
+       Route::get('/get', [ProfileController::class, 'get'])->name('profile.get');
+       Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
     });
     Route::get('/logout', [LogoutController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
 });
