@@ -2,10 +2,10 @@
 
 namespace App\Services\Auth;
 
+use App\Exceptions\AuthServiceException;
 use App\Models\Provider;
 use App\Models\ProvidersData;
 use App\Models\User;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -22,7 +22,7 @@ class OAuth extends OAuthService
     protected array $request;
 
     /**
-     * @throws Exception
+     * @throws AuthServiceException
      */
     public function __construct(string $provider, ?array $request)
     {
@@ -48,7 +48,7 @@ class OAuth extends OAuthService
             $this->serviceApiUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
         }
         if ($this->provider != 'google' && $this->provider != 'github') {
-            throw new Exception('unknown service');
+            throw new AuthServiceException('unknown service');
         }
         if ($request != null) {
             $this->request = $request;
@@ -61,7 +61,7 @@ class OAuth extends OAuthService
     }
 
     /**
-     * @throws Exception|GuzzleException
+     * @throws AuthServiceException|GuzzleException
      */
     public function getToken(): array
     {
@@ -82,7 +82,7 @@ class OAuth extends OAuthService
         } catch (ClientException $e) {
             $res = (string)$e->getResponse()->getBody();
             $res = json_decode($res);
-            throw new Exception("{$res->error}");
+            throw new AuthServiceException("{$res->error}");
         }
 
         $data = json_decode((string)$res->getBody());
@@ -91,7 +91,7 @@ class OAuth extends OAuthService
     }
 
     /**
-     * @throws Exception
+     * @throws AuthServiceException
      */
     public function login(): array
     {
@@ -124,7 +124,7 @@ class OAuth extends OAuthService
     }
 
     /**
-     * @throws Exception
+     * @throws AuthServiceException
      */
     public function addAccount(): array
     {
@@ -139,7 +139,7 @@ class OAuth extends OAuthService
 
         $providersData = ProvidersData::findByProviderIdAndUsername($provider->id, $data[$provider->unique_key]);
         if ($providersData != null) {
-            throw new Exception('you already have added github account');
+            throw new AuthServiceException('you already have added github account');
         }
 
         $providersData = new ProvidersData();
@@ -151,7 +151,7 @@ class OAuth extends OAuthService
     }
 
     /**
-     * @throws Exception
+     * @throws AuthServiceException
      */
     private function requestToService(array $request): ResponseInterface
     {
@@ -160,7 +160,7 @@ class OAuth extends OAuthService
         try {
             $res = $client->request('GET', $this->serviceApiUrl);
         } catch (GuzzleException) {
-            throw new Exception('failed to get user from ' . $this->provider);
+            throw new AuthServiceException('failed to get user from ' . $this->provider);
         }
 
         return $res;

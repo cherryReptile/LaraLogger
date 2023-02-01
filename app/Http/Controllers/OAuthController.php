@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AuthServiceException;
 use App\Http\Resources\UserResource;
 use App\Services\Auth\OAuth;
-use Exception;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -16,7 +15,7 @@ class OAuthController extends CustomController
     {
         try {
             $oauth = new OAuth($request->provider, null);
-        } catch (Exception $e) {
+        } catch (AuthServiceException $e) {
             return $this->responseError($e, 400);
         }
         $res = $oauth->getUrl();
@@ -32,7 +31,7 @@ class OAuthController extends CustomController
         try {
             $oauth = new OAuth($request->provider, $request->post());
             $res = $oauth->getToken();
-        } catch (Exception $e) {
+        } catch (AuthServiceException $e) {
             return $this->responseError($e, 400);
         }
         return Response::json($res);
@@ -47,7 +46,7 @@ class OAuthController extends CustomController
         try {
             $oauth = new OAuth($request->provider, $request->post());
             $res = $oauth->login();
-        } catch (Exception $e) {
+        } catch (AuthServiceException $e) {
             return $this->responseError($e, 400);
         }
         return Response::json([
@@ -66,7 +65,7 @@ class OAuthController extends CustomController
                 'request' => $request->post()
             ]);
             $res = $oauth->addAccount();
-        } catch (Exception $e) {
+        } catch (AuthServiceException $e) {
             return $this->responseError($e, 400);
         }
 

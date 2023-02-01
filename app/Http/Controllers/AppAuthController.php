@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AuthServiceException;
 use App\Http\Requests\AppUserRequest;
 use App\Http\Resources\UserResource;
 use App\Services\Auth\App;
@@ -17,7 +18,7 @@ class AppAuthController extends CustomController
 
         try {
             $res = $app->register();
-        } catch (Exception $e) {
+        } catch (AuthServiceException $e) {
             return $this->responseError($e, 400);
         }
 
@@ -33,7 +34,7 @@ class AppAuthController extends CustomController
 
         try {
             $res = $app->login();
-        } catch (Exception $e) {
+        } catch (AuthServiceException $e) {
             return $this->responseError($e, 400);
         }
 
@@ -50,7 +51,7 @@ class AppAuthController extends CustomController
 
         try {
             $res = $app->addAccount();
-        } catch (Exception $e) {
+        } catch (AuthServiceException $e) {
             return $this->responseError($e, 400);
         }
 
