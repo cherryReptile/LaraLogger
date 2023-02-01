@@ -114,6 +114,7 @@ class OAuth extends OAuthService
 
         $providersData = new ProvidersData();
         $providersData->addProviderWithData($user, $provider, $data);
+        $user->profile()->create();
 
         $token = $user->createToken('api')->plainTextToken;
 
@@ -144,7 +145,6 @@ class OAuth extends OAuthService
 
         $providersData = new ProvidersData();
         $providersData->addProviderWithData($user, $provider, $data);
-        $user->profile()->create();
 
         return [
             'message' => 'account added successfully through ' . $this->provider
