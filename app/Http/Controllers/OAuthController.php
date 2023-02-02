@@ -16,7 +16,7 @@ class OAuthController extends CustomController
         try {
             $oauth = new OAuth($request->provider, null);
         } catch (AuthServiceException $e) {
-            return $this->responseError($e, 400);
+            return $this->responseErrorFromException($e, 400);
         }
         $res = $oauth->getUrl();
         return Response::json($res);
@@ -32,7 +32,7 @@ class OAuthController extends CustomController
             $oauth = new OAuth($request->provider, $request->post());
             $res = $oauth->getToken();
         } catch (AuthServiceException $e) {
-            return $this->responseError($e, 400);
+            return $this->responseErrorFromException($e, 400);
         }
         return Response::json($res);
     }
@@ -47,7 +47,7 @@ class OAuthController extends CustomController
             $oauth = new OAuth($request->provider, $request->post());
             $res = $oauth->login();
         } catch (AuthServiceException $e) {
-            return $this->responseError($e, 400);
+            return $this->responseErrorFromException($e, 400);
         }
         return Response::json([
             'user' => UserResource::make($res['user']),
@@ -66,7 +66,7 @@ class OAuthController extends CustomController
             ]);
             $res = $oauth->addAccount();
         } catch (AuthServiceException $e) {
-            return $this->responseError($e, 400);
+            return $this->responseErrorFromException($e, 400);
         }
 
         return Response::json([

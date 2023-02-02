@@ -6,7 +6,6 @@ use App\Exceptions\AuthServiceException;
 use App\Http\Requests\AppUserRequest;
 use App\Http\Resources\UserResource;
 use App\Services\Auth\App;
-use Exception;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\JsonResponse;
 
@@ -19,7 +18,7 @@ class AppAuthController extends CustomController
         try {
             $res = $app->register();
         } catch (AuthServiceException $e) {
-            return $this->responseError($e, 400);
+            return $this->responseErrorFromException($e, 400);
         }
 
         return Response::json([
@@ -35,7 +34,7 @@ class AppAuthController extends CustomController
         try {
             $res = $app->login();
         } catch (AuthServiceException $e) {
-            return $this->responseError($e, 400);
+            return $this->responseErrorFromException($e, 400);
         }
 
         return Response::json([
@@ -52,7 +51,7 @@ class AppAuthController extends CustomController
         try {
             $res = $app->addAccount();
         } catch (AuthServiceException $e) {
-            return $this->responseError($e, 400);
+            return $this->responseErrorFromException($e, 400);
         }
 
         return Response::json([
