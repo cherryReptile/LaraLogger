@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Response;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -43,8 +44,10 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (AuthServiceException|CustomException $e, $request) {
+           return Response::json([
+               'error' => $e->getMessage()
+           ], 400);
         });
     }
 }

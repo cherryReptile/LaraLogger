@@ -10,23 +10,23 @@ use Illuminate\Support\Facades\Response;
 
 class UserController extends CustomController
 {
+    /**
+     * @throws CustomException
+     */
     public function getAllWithSortAndFilter(Request $request)
     {
         $request->validate([
-           'field' => 'required|string',
-           'order_by' => 'required|string',
-           'filter' => 'sometimes|array'
+            'field' => 'required|string',
+            'order_by' => 'required|string',
+            'filter' => 'sometimes|array'
         ]);
-        try {
-            $user = new User();
-            if (isset($request['filter'])) {
-                $users = $user->getClientUsersWithFilterAndOrderBy($request->post());
-            } else {
-                $users = $user->joinProfile($request['field'], $request['order_by'])->get();
-            }
-        } catch (CustomException $e) {
-            return $this->responseErrorFromException($e, 400);
+        $user = new User();
+        if (isset($request['filter'])) {
+            $users = $user->getClientUsersWithFilterAndOrderBy($request->post());
+        } else {
+            $users = $user->joinProfile($request['field'], $request['order_by'])->get();
         }
+
         if (!isset($users[0])) {
             return $this->responseError("users not found for this filter", 400);
         }

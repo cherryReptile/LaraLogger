@@ -11,15 +11,13 @@ use Illuminate\Http\JsonResponse;
 
 class AppAuthController extends CustomController
 {
+    /**
+     * @throws AuthServiceException
+     */
     public function register(AppUserRequest $request): JsonResponse
     {
         $app = new App($request->post());
-
-        try {
-            $res = $app->register();
-        } catch (AuthServiceException $e) {
-            return $this->responseErrorFromException($e, 400);
-        }
+        $res = $app->register();
 
         return Response::json([
             'user' => UserResource::make($res['user']),
@@ -27,15 +25,13 @@ class AppAuthController extends CustomController
         ], 201);
     }
 
+    /**
+     * @throws AuthServiceException
+     */
     public function login(AppUserRequest $request): JsonResponse
     {
         $app = new App($request->post());
-
-        try {
-            $res = $app->login();
-        } catch (AuthServiceException $e) {
-            return $this->responseErrorFromException($e, 400);
-        }
+        $res = $app->login();
 
         return Response::json([
             'user' => UserResource::make($res['user']),
@@ -43,19 +39,17 @@ class AppAuthController extends CustomController
         ]);
     }
 
+    /**
+     * @throws AuthServiceException
+     */
     public function addAccount(AppUserRequest $request): JsonResponse
     {
         $user = $request->user();
         $app = new App(['user' => $user, 'request' => $request->post()]);
-
-        try {
-            $res = $app->addAccount();
-        } catch (AuthServiceException $e) {
-            return $this->responseErrorFromException($e, 400);
-        }
+        $res = $app->addAccount();
 
         return Response::json([
-           'message' => $res['message']
+            'message' => $res['message']
         ]);
     }
 }
