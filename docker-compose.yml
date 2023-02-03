@@ -3,6 +3,8 @@ version: '3.8'
 services:
   nginx:
     image: nginx:stable-alpine
+    depends_on:
+      - app
     volumes:
       - ./docker/nginx/templates:/etc/nginx/templates
     environment:
