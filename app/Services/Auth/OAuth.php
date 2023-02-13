@@ -79,15 +79,17 @@ class OAuth extends OAuthService
             $res = $client->request('POST', $this->urlToToken, [
                 'form_params' => $fields,
             ]);
+            $res = (string)$res->getBody();
         } catch (ClientException $e) {
             $res = (string)$e->getResponse()->getBody();
-            $res = json_decode($res);
-            throw new AuthServiceException("{$res->error}");
         }
 
-        $data = json_decode((string)$res->getBody());
+        $data = json_decode($res, true);
+        if (isset($data['error_description'])) {
+            throw new AuthServiceException($data['error_description']);
+        }
 
-        return ['access_token' => $data->access_token];
+        return ['access_token' => $data['access_token']];
     }
 
     /**
