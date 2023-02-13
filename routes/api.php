@@ -34,6 +34,7 @@ Route::prefix('auth')->group(function () {
        Route::get('/get', [ProfileController::class, 'get'])->name('profile.get');
        Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
     });
-    Route::post('/users/get', [UserController::class, 'getAllWithSortAndFilter'])->name('users.get');
-    Route::get('/logout', [LogoutController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
 });
+Route::get('/user/{id}', [UserController::class, 'find'])->name('user.get');
+Route::post('/users/get', [UserController::class, 'getAllWithSortAndFilter'])->name('users.get');
+Route::get('/logout', [LogoutController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
