@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Response;
 
 class UserController extends CustomController
 {
-    /**
-     * @throws CustomException
-     */
     public function getAllWithSortAndFilter(Request $request)
     {
         $request->validate([
@@ -20,15 +17,11 @@ class UserController extends CustomController
             'order_by' => 'required|string',
             'filter' => 'sometimes|array'
         ]);
-        $user = new User();
-        if (isset($request['filter'])) {
-            $users = $user->getClientUsersWithFilterAndOrderBy($request->post());
+        $users = new User();
+        if (!isset($request['filter'])) {
+            $users = $users->orderBy($request['field'], $request['order_by'])->get();
         } else {
-            $users = $user->joinProfile($request['field'], $request['order_by'])->get();
-        }
-
-        if (!isset($users[0])) {
-            return $this->responseError("users not found for this filter", 400);
+            $users = $users->getClientUsersWithFilterAndOrderBy($request->post());
         }
         return Response::json(UserResource::collection($users));
     }
