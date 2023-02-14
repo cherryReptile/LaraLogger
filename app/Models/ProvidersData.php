@@ -19,7 +19,7 @@ class ProvidersData extends Model
 
     public static function findByProviderIdAndUsername(int $id, string $username): ProvidersData|null
     {
-         return self::whereRaw("provider_id=$id and username='$username'")->first();
+        return self::whereRaw("provider_id=$id and username='$username'")->first();
     }
 
     public function addProviderWithData(User $user, Provider $provider, array $data)
@@ -30,12 +30,7 @@ class ProvidersData extends Model
             'provider_id' => $provider->id
         ]);
 
-        DB::table('users_providers')->insert([
-            'user_id' => $user->id,
-            'provider_id' => $provider->id,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        $user->providers()->save($provider);
     }
 
     public function user(): BelongsTo

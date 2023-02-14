@@ -142,7 +142,7 @@ class OAuth extends OAuthService
 
         $providersData = ProvidersData::findByProviderIdAndUsername($provider->id, $data[$provider->unique_key]);
         if ($providersData != null) {
-            throw new AuthServiceException('you already have added github account');
+            throw new AuthServiceException("you already have added $this->provider account");
         }
 
         $providersData = new ProvidersData();
