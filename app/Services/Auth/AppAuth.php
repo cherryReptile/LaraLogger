@@ -8,32 +8,30 @@ use App\Models\ProvidersData;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-class App extends AppAuthService
+class AppAuth extends AppAuthService
 {
-    protected array $request;
     protected Provider $provider;
 
-    public function __construct(array $request)
+    public function __construct()
     {
-        $this->request = $request;
         $this->provider = Provider::where('provider', '=', 'app')->firstOrFail();
     }
 
     /**
      * @throws AuthServiceException
      */
-    public function register(): array
+    public function register(array $request): array
     {
-        $providersData = ProvidersData::findByProviderIdAndUsername($this->provider->id, $this->request['email']);
+        $providersData = ProvidersData::findByProviderIdAndUsername($this->provider->id, $request['email']);
         if ($providersData != null) {
             throw new AuthServiceException('this user already exists');
         }
 
-        $user = User::create(['login' => $this->request['email']]);
+        $user = User::create(['login' => $request['email']]);
 
         $data = [
-            'email' => $this->request['email'],
-            'password' => Hash::make($this->request['password'])
+            'email' => $request['email'],
+            'password' => Hash::make($request['password'])
         ];
 
         $providersData = new ProvidersData();
@@ -51,15 +49,15 @@ class App extends AppAuthService
     /**
      * @throws AuthServiceException
      */
-    public function login(): array
+    public function login(array $request): array
     {
-        $providersData = ProvidersData::findByProviderIdAndUsername($this->provider->id, $this->request['email']);
+        $providersData = ProvidersData::findByProviderIdAndUsername($this->provider->id, $request['email']);
         if ($providersData === null) {
             throw new AuthServiceException('user not found');
         }
 
         $data = json_decode($providersData->data);
-        if (!Hash::check($this->request['password'], $data->password)) {
+        if (!Hash::check($request['password'], $data->password)) {
             throw new AuthServiceException('invalid password');
         }
 
@@ -75,10 +73,8 @@ class App extends AppAuthService
     /**
      * @throws AuthServiceException
      */
-    public function addAccount(): array
+    public function addAccount(User $user, array $request): array
     {
-        $user = $this->request['user'];
-        $request = $this->request['request'];
         $pd = $user->providersData()->where('provider_id', '=', "{$this->provider->id}")->first();
         if ($pd != null) {
             throw new AuthServiceException('you already have account in app service');
@@ -91,8 +87,8 @@ class App extends AppAuthService
         $providersData = new ProvidersData();
 
         $data = [
-            'email' => $this->request['request']['email'],
-            'password' => Hash::make($this->request['request']['password'])
+            'email' => $request['request']['email'],
+            'password' => Hash::make($request['request']['password'])
         ];
 
         $providersData->addProviderWithData($user, $this->provider, $data);

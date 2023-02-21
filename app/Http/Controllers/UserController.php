@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
-class UserController extends CustomController
+class UserController extends Controller
 {
     public function find(Request $request)
     {

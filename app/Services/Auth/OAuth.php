@@ -19,12 +19,11 @@ class OAuth extends OAuthService
     protected string $redirectUri;
     protected array $oauthClient;
     protected string $serviceApiUrl;
-    protected array $request;
 
     /**
      * @throws AuthServiceException
      */
-    public function __construct(string $provider, ?array $request)
+    public function index(string $provider)
     {
         $this->provider = $provider;
         if ($this->provider === 'github') {
@@ -50,9 +49,6 @@ class OAuth extends OAuthService
         if ($this->provider != 'google' && $this->provider != 'github') {
             throw new AuthServiceException('unknown service');
         }
-        if ($request != null) {
-            $this->request = $request;
-        }
     }
 
     public function getUrl(): array
@@ -63,10 +59,10 @@ class OAuth extends OAuthService
     /**
      * @throws AuthServiceException|GuzzleException
      */
-    public function getToken(): array
+    public function getToken(array $request): array
     {
         $fields = [
-            'code' => $this->request['code'],
+            'code' => $request['code'],
             'client_id' => $this->oauthClient['client_id'],
             'client_secret' => $this->oauthClient['client_secret'],
             'redirect_uri' => $this->redirectUri,
@@ -95,9 +91,9 @@ class OAuth extends OAuthService
     /**
      * @throws AuthServiceException
      */
-    public function login(): array
+    public function login(array $request): array
     {
-        $res = $this->requestToService($this->request);
+        $res = $this->requestToService($request);
         $data = json_decode((string)$res->getBody(), true);
 
         $provider = Provider::where('provider', '=', $this->provider)->firstOrFail();
@@ -129,11 +125,8 @@ class OAuth extends OAuthService
     /**
      * @throws AuthServiceException
      */
-    public function addAccount(): array
+    public function addAccount(User $user, array $request): array
     {
-        $user = $this->request['user'];
-        $request = $this->request['request'];
-
         $res = $this->requestToService($request);
 
         $data = json_decode((string)$res->getBody(), true);

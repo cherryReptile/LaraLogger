@@ -5,19 +5,24 @@ namespace App\Http\Controllers;
 use App\Exceptions\AuthServiceException;
 use App\Http\Requests\AppUserRequest;
 use App\Http\Resources\UserResource;
-use App\Services\Auth\App;
+use App\Services\Auth\AppAuth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\JsonResponse;
 
-class AppAuthController extends CustomController
+class AppAuthController extends Controller
 {
+    protected AppAuth $auth;
+
+    public function __construct(AppAuth $auth)
+    {
+        $this->auth = $auth;
+    }
     /**
      * @throws AuthServiceException
      */
     public function register(AppUserRequest $request): JsonResponse
     {
-        $app = new App($request->post());
-        $res = $app->register();
+        $res = $this->auth->register($request->post());
 
         return Response::json([
             'user' => UserResource::make($res['user']),
@@ -30,8 +35,7 @@ class AppAuthController extends CustomController
      */
     public function login(AppUserRequest $request): JsonResponse
     {
-        $app = new App($request->post());
-        $res = $app->login();
+        $res = $this->auth->login($request->post());
 
         return Response::json([
             'user' => UserResource::make($res['user']),
@@ -45,8 +49,7 @@ class AppAuthController extends CustomController
     public function addAccount(AppUserRequest $request): JsonResponse
     {
         $user = $request->user();
-        $app = new App(['user' => $user, 'request' => $request->post()]);
-        $res = $app->addAccount();
+        $res = $this->auth->addAccount($user, $request->post());
 
         return Response::json([
             'message' => $res['message']

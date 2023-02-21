@@ -10,15 +10,22 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
-class OAuthController extends CustomController
+class OAuthController extends Controller
 {
+    protected OAuth $oauth;
+
     /**
      * @throws AuthServiceException
      */
+    public function __construct(Request $request, OAuth $oauth)
+    {
+        $oauth->index($request->provider);
+        $this->oauth = $oauth;
+    }
+
     public function getUrl(Request $request): JsonResponse
     {
-        $oauth = new OAuth($request->provider, null);
-        $res = $oauth->getUrl();
+        $res = $this->oauth->getUrl();
         return Response::json($res);
     }
 
@@ -31,8 +38,7 @@ class OAuthController extends CustomController
             'code' => 'required'
         ]);
 
-        $oauth = new OAuth($request->provider, $request->post());
-        $res = $oauth->getToken();
+        $res = $this->oauth->getToken($request->post());
 
         return Response::json($res);
     }
@@ -45,8 +51,8 @@ class OAuthController extends CustomController
         $request->validate([
             'access_token' => 'required'
         ]);
-        $oauth = new OAuth($request->provider, $request->post());
-        $res = $oauth->login();
+
+        $res = $this->oauth->login($request->post());
         return Response::json([
             'user' => UserResource::make($res['user']),
             'token' => $res['token']
@@ -59,11 +65,7 @@ class OAuthController extends CustomController
     public function addAccount(Request $request)
     {
         $request->validate(['access_token' => 'required']);
-        $oauth = new OAuth($request->provider, [
-            'user' => $request->user(),
-            'request' => $request->post()
-        ]);
-        $res = $oauth->addAccount();
+        $res = $this->oauth->addAccount($request->user(), $request->post());
 
         return Response::json([
             'message' => $res['message']
