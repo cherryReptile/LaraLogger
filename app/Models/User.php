@@ -76,4 +76,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Profile::class, 'user_id');
     }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(Log::class, 'user_id');
+    }
 }
