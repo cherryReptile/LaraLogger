@@ -44,7 +44,7 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->renderable(function (AuthServiceException|CustomException $e, $request) {
+        $this->renderable(function (AuthServiceException|CustomException|LogException $e, $request) {
            return Response::json([
                'error' => $e->getMessage()
            ], 400);

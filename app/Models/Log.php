@@ -12,11 +12,13 @@ class Log extends Model
     use HasFactory;
 
     protected $fillable = [
-        'file',
+        'file_where_calling',
+        'file_where_defined',
         'class',
         'changed_properties',
         'all_properties',
         'calling_line',
+        'data',
         'level'
     ];
 

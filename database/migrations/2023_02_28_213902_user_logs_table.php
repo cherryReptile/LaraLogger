@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('user_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('file');
+            $table->string('file_where_calling');
+            $table->string('file_where_defined')->nullable();
             $table->string('class')->nullable();
             $table->json('changed_properties')->nullable();
             $table->json('all_properties')->nullable();
