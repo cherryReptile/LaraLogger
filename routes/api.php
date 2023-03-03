@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppAuthController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\ProfileController;
@@ -31,9 +32,13 @@ Route::prefix('auth')->group(function () {
         Route::post('/{provider}/add', [OAuthController::class, 'addAccount'])->name('oauth.add')->middleware('auth:sanctum');
     });
     Route::prefix('profile')->middleware(['auth:sanctum'])->group(function () {
-       Route::get('/get', [ProfileController::class, 'get'])->name('profile.get');
-       Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
+        Route::get('/get', [ProfileController::class, 'get'])->name('profile.get');
+        Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
     });
+});
+
+Route::prefix('log')->group(function () {
+    Route::post('/{level}', [LogController::class, 'create'])->middleware('auth:sanctum')->name('log');
 });
 Route::get('/user/{id}', [UserController::class, 'find'])->name('user.get');
 Route::post('/users/get', [UserController::class, 'getAllWithSortAndFilter'])->name('users.get');
