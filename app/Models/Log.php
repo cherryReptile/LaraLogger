@@ -16,15 +16,14 @@ class Log extends Model
         'class',
         'changed_properties',
         'all_properties',
-        'calling_line'
+        'calling_line',
+        'level'
     ];
+
+    protected $table = 'user_logs';
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::Class);
-    }
-
-    public function logLevel(): HasOne {
-        return $this->hasOne(LogLevel::class, 'id', 'log_level_id');
     }
 }

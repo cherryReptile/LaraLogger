@@ -16,12 +16,12 @@ return new class extends Migration
         Schema::create('user_logs', function (Blueprint $table) {
             $table->id();
             $table->string('file');
-            $table->string('class');
+            $table->string('class')->nullable();
             $table->json('changed_properties')->nullable();
             $table->json('all_properties')->nullable();
             $table->string('calling_line');
+            $table->string('level');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('log_level_id')->constrained('log_levels')->cascadeOnDelete();
             $table->timestamps();
         });
     }
