@@ -35,6 +35,6 @@ class LogController extends Controller
             'level' => $level
         ]);
 
-        return Response::json(['message' => 'log created successfully', 'log' => LogResource::make($log)]);
+        return Response::json(['message' => 'log created successfully', 'log' => LogResource::make($log)], 201);
     }
 }
