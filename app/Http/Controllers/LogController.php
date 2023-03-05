@@ -3,27 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\LogException;
+use App\Http\Requests\LogRequest;
+use App\Http\Resources\LogResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Http\Request;
 
 class LogController extends Controller
 {
     /**
      * @throws LogException
      */
-    public function create(Request $request): JsonResponse
+    public function create(LogRequest $request): JsonResponse
     {
-        $request->validate([
-            'file_where_calling' => 'required|string',
-            'file_where_defined' => 'sometimes|string',
-            'data' => 'sometimes',
-            'class' => 'sometimes|string',
-            'changed_properties' => 'sometimes|array',
-            'all_properties' => 'sometimes|array',
-            'calling_on_line' => 'required|int'
-        ]);
-
         $user = $request->user();
         $post = $request->post();
         $level = strtoupper((string)$request->level);
@@ -33,7 +24,7 @@ class LogController extends Controller
             default => throw new LogException('unknown log level')
         };
 
-        $user->logs()->create([
+        $log = $user->logs()->create([
             'file_where_calling' => $post['file_where_calling'],
             'data' => json_encode($post['data'] ?? null),
             'file_where_defined' => $post['file_where_defined'] ?? null,
@@ -44,6 +35,6 @@ class LogController extends Controller
             'level' => $level
         ]);
 
-        return Response::json(['message' => 'log created successfully', 'level' => $level]);
+        return Response::json(['message' => 'log created successfully', 'log' => LogResource::make($log)]);
     }
 }
