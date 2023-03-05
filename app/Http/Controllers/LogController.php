@@ -27,6 +27,7 @@ class LogController extends Controller
         $log = $user->logs()->create([
             'file_where_calling' => $post['file_where_calling'],
             'data' => json_encode($post['data'] ?? null),
+            'type' => json_encode($post['type'] ?? null),
             'file_where_defined' => $post['file_where_defined'] ?? null,
             'class' => $post['class'] ?? null,
             'changed_properties' => json_encode($post['changed_properties'] ?? null),

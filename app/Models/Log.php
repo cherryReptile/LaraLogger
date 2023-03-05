@@ -19,6 +19,7 @@ class Log extends Model
         'all_properties',
         'calling_line',
         'data',
+        'type',
         'level'
     ];
 

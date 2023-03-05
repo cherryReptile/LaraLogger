@@ -27,6 +27,7 @@ class LogRequest extends FormRequest
             'file_where_calling' => 'required|string',
             'file_where_defined' => 'sometimes|string',
             'data' => 'sometimes',
+            'type' => 'sometimes|string',
             'class' => 'sometimes|string',
             'changed_properties' => 'sometimes|array',
             'all_properties' => 'sometimes|array',
